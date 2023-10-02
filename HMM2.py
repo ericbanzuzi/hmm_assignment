@@ -72,15 +72,16 @@ def matrix_log(a):
         result.append(row_res)
     return result
 
+
 def matrix_log_a(a):
     result = []
     for row in range(len(a)):
         row_res = []
         for col in range(len(a[row])):
-            print(a[row][col])
             row_res.append(math.log(a[row][col] if a[row][col] != 0 else sys.float_info.epsilon))
         result.append(row_res)
     return result
+
 
 def reshape_vector(v):
     return [[x[0] for x in v]]
@@ -100,82 +101,38 @@ def viterbi_matrix(A, delta):
     return result
 
 
-def viterbi_matrix_revised(A, delta):
-    result = []
-    temp_delta = reshape_vector(delta)
-    for i in range(len(A)):
-        row = []
-        col = get_column(i, A)
-        for j in range(len(col[0])):
-            row.append(col[0][j]+temp_delta[0][j])
-        result.append(row)
-    return result
-
-
-def viterbi_matrix_add_obs(result_matrix, obs):
-    result = []
-    for i in range(len(result_matrix)):
-        row = result_matrix[i]
-        # print('ROW', row)
-        row_result = []
-        for j in range(len(row)):
-            row_result.append(row[j]+obs[0][j])
-        result.append(row_result)
-    return result
-
-
-def viterbi_old(A, B, pi, observations):
-    delta = dot_product(pi, get_column(observations[0], B))
-    deltas = [delta]
-    deltas_idx = [None]
-    for obs in observations[1:]:
-
-        temp = viterbi_matrix(A, delta)
-        temp = matrix_dot(temp, get_column(obs, B))
-        delta = []
-        delta_idx = []
-        for row in temp:
-            delta.append([max(row)])
-            delta_idx.append(find_max_id(row) if max(row) != 0 else None)
-        deltas.append(delta)
-        deltas_idx.append(delta_idx)
-    return deltas, deltas_idx
-
-
 def viterbi(A, B, pi, observations):
-    delta = matrix_log(dot_product(pi, get_column(observations[0], B)))
-    deltas = [delta]
-    deltas_idx = [None]
-    for obs in observations[1:]:
-        b_log = matrix_log(get_column(obs, B))
-        #print('BEFORE', A)
-        a_log = matrix_log(A)
-        #print('PASSED a_log', A)
-        temp = viterbi_matrix_revised(a_log, delta)
+    N = len(A)
+    K = len(observations)
 
-        temp2 = viterbi_matrix_add_obs(temp, b_log)
-        delta = []
-        delta_idx = []
-        for row in temp2:
-            delta.append([max(row)])
-            delta_idx.append(find_max_id(row) if max(row) != 0 else None)
-        deltas.append(delta)
-        deltas_idx.append(delta_idx)
-    return deltas, deltas_idx
+    deltas = []
+    deltas_idx = []
 
+    delta = dot_product(pi, get_column(observations[0], B))
+    deltas.append(delta)
 
-def backtrack_result(deltas, deltas_idx):
-    result = [find_max_id(deltas[-1])]
-    for i in range(len(deltas_idx)-1, 0, -1):
-        result.insert(0, deltas_idx[i][find_max_id(reshape_vector(deltas[i])[0])])
-    return result
+    for k in range(1, K):
+        row_delta = []
+        row_idx = []
+        for i in range(N):
+            temp_product = viterbi_matrix(A, deltas[-1])
+            b_temp = get_column(observations[k], B)
+            row_delta.append([max(temp_product[i])*b_temp[0][i]])
+            row_idx.append(find_max_id(temp_product[i]))
 
+        deltas.append(row_delta)
+        deltas_idx.append(row_idx)
 
-def forward_algorithm(A, B, pi, observations):
-    alpha = dot_product(pi, get_column(observations[0], B))
-    for obs in observations[1:]:
-        alpha = dot_product(matrix_mul(alpha, A), get_column(obs, B))
-    return sum(alpha[0])
+    # Backtracking
+    seq = []
+    last_delta = reshape_vector(deltas[-1])[0]
+    seq.append(find_max_id(last_delta))
+
+    for j in range(K-2, -1, -1):
+        likely_best_state = seq[0]
+        state = deltas_idx[j][likely_best_state]
+        seq.insert(0, state)
+    return seq
 
 
 if __name__ == '__main__':
@@ -183,20 +140,10 @@ if __name__ == '__main__':
     for line in fileinput.input():
         lines.append(line)
 
-    # A = create_matrix(lines[0])
-    # B = create_matrix(lines[1])
-    # pi = create_matrix(lines[2])
-    # observations = create_obs_seq(lines[3])
-    # deltas, deltas_idx = viterbi(A, B, pi, observations)
+    A = create_matrix(lines[0])
+    B = create_matrix(lines[1])
+    pi = create_matrix(lines[2])
+    observations = create_obs_seq(lines[3])
 
-    a = [[0.6, 0.1, 0.1, 0.2], [0, 0.3, 0.2, 0.5], [0.8, 0.1, 0, 0.1], [0.2, 0, 0.1, 0.7]]
-    b = [[0.6, 0.2, 0.1, 0.1], [0.1, 0.4, 0.1, 0.4], [0, 0, 0.7, 0.3], [0, 0, 0.1, 0.9]]
-    pi = [[0.5, 0, 0, 0.5]]
-    observations = [2, 0, 3, 1]
-    deltas, deltas_idx = viterbi(a, b, pi, observations)
-    print(deltas)
-    # print(deltas_idx)
-
-    result = backtrack_result(deltas, deltas_idx)
-    print(' '.join(map(str, result)))
-    print()
+    sequence = viterbi(A, B, pi, observations)
+    print(' '.join(map(str, sequence)))
