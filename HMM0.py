@@ -2,6 +2,10 @@ import fileinput
 
 
 def create_matrix(input_string):
+    """
+    Creates a matrix as python list from the input format used in these assignments
+    input: input_string (a string in Kattis format)
+    """
     input_list = [float(x) for x in input_string.split()]
     rows, cols = int(input_list[0]), int(input_list[1])
     matrix = []
@@ -17,8 +21,8 @@ def create_matrix(input_string):
 def matrix_mul(a, b):
     """
     Returns the multiplication of two 2D matrices
-    input: X (n x m array)
-    input: Y (k x l array)
+    input: a (n x m array)
+    input: b (k x l array)
     output: result (n x l multiplied array)
     """
     result = []
@@ -46,5 +50,3 @@ if __name__ == '__main__':
     observations = matrix_mul(next_state, B)
     result_shape = f'{len(observations)} {len(observations[0])} '
     print(result_shape + ' '.join(map(str, observations[0])))
-
-

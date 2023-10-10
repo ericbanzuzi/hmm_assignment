@@ -4,6 +4,10 @@ import sys
 
 
 def create_matrix(input_string):
+    """
+    Creates a matrix as python list from the input format used in these assignments
+    input: input_string (a string in Kattis format)
+    """
     input_list = [float(x) for x in input_string.split()]
     rows, cols = int(input_list[0]), int(input_list[1])
     matrix = []
@@ -16,82 +20,28 @@ def create_matrix(input_string):
     return matrix
 
 
-def matrix_mul(a, b):
-    """
-    Returns the multiplication of two 2D matrices
-    input: X (n x m array)
-    input: Y (k x l array)
-    output: result (n x l multiplied array)
-    """
-    result = []
-    for i in range(len(a)):
-        row = []
-        for j in range(len(b[0])):
-            temp = 0
-            for k in range(len(a[0])):
-                temp += a[i][k]*b[k][j]
-            row.append(temp)
-        result.append(row)
-    return result
-
 def create_obs_seq(input_string):
+    """
+    Creates a list of sequences from an input string
+    input: input_string (a string in Kattis format)
+    """
     input_list = [int(x) for x in input_string.split()[1:]]
     return input_list
 
 
 def get_column(observation, B):
+    """
+    Returns a column from a matrix
+    input: observation (column id)
+    input: B (observation matrix)
+    """
     result = []
     for i in range(len(B)):
         result.append(B[i][observation])
     return [result]
 
 
-def dot_product(a, b):
-    result = []
-    for i in range(len(a[0])):
-        result.append([a[0][i]*b[0][i]])
-    return result
-
-
-def matrix_dot(a, b):
-    result = []
-    for i in range(len(a)):
-        row = []
-        for j in range(len(a[0])):
-            row.append(a[i][j]*b[0][i])
-        result.append(row)
-    return result
-
-
-def matrix_log(a):
-    result = []
-    for row in range(len(a)):
-        row_res = []
-        for col in range(len(a[row])):
-            row_res.append(math.log(a[row][col] if a[row][col] != 0 else sys.float_info.epsilon))
-        result.append(row_res)
-    return result
-
-
-def matrix_log_a(a):
-    result = []
-    for row in range(len(a)):
-        row_res = []
-        for col in range(len(a[row])):
-            row_res.append(math.log(a[row][col] if a[row][col] != 0 else sys.float_info.epsilon))
-        result.append(row_res)
-    return result
-
-
-def reshape_vector(v):
-    return [[x[0] for x in v]]
-
-
-# https://sparkbyexamples.com/python/get-index-of-max-of-list-in-python/
-def find_max_id(a):
-    return a.index(max(a))
-
-
+# STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
 def alpha_pass(A, B, pi, observations):
     obs0 = observations[0]
     N, T = len(A), len(observations)
@@ -134,6 +84,7 @@ def alpha_pass(A, B, pi, observations):
     return alphas, cs
 
 
+# STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
 def beta_pass(A, B, observations, cs):
 
     N, T = len(A), len(observations)
@@ -155,6 +106,7 @@ def beta_pass(A, B, observations, cs):
     return betas
 
 
+# STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
 def gamma_calculations(A, B, observations, alphas, betas):
     N, T = len(A), len(observations)
     gammas = []
@@ -180,7 +132,8 @@ def gamma_calculations(A, B, observations, alphas, betas):
     return gammas, di_gammas
 
 
-def baum_welch(A, B, pi, observations, num_iter=1000):
+# STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
+def baum_welch(A, B, pi, observations, num_iter=100):
     N, T = len(A), len(observations)
     alphas, cs = alpha_pass(A, B, pi, observations)
     betas = beta_pass(A, B, observations, cs)
@@ -209,6 +162,7 @@ def baum_welch(A, B, pi, observations, num_iter=1000):
     return A, B, pi
 
 
+# STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
 def estimate_model(A, B, pi, observations, gammas, di_gammas):
     N, T, M = len(A), len(observations), len(B[0])
     pi = gammas[0]
@@ -226,7 +180,6 @@ def estimate_model(A, B, pi, observations, gammas, di_gammas):
 
             if denom == 0:
                 denom = sys.float_info.epsilon
-
             A[i][j] = numer / denom
 
     # (re-)estimate B
@@ -243,13 +196,14 @@ def estimate_model(A, B, pi, observations, gammas, di_gammas):
 
             if denom == 0:
                 denom = sys.float_info.epsilon
-
             B[i][j] = numer / denom
-
     return A, B, pi
 
 
 def get_result(M):
+    """
+    Formats the result to a correctly fomratted string
+    """
     rows = len(M)
     cols = len(M[0])
     result = f'{rows} {cols}'

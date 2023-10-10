@@ -1,9 +1,11 @@
 import fileinput
-import math
-import sys
 
 
 def create_matrix(input_string):
+    """
+    Creates a matrix as python list from the input format used in these assignments
+    input: input_string (a string in Kattis format)
+    """
     input_list = [float(x) for x in input_string.split()]
     rows, cols = int(input_list[0]), int(input_list[1])
     matrix = []
@@ -16,30 +18,21 @@ def create_matrix(input_string):
     return matrix
 
 
-def matrix_mul(a, b):
-    """
-    Returns the multiplication of two 2D matrices
-    input: X (n x m array)
-    input: Y (k x l array)
-    output: result (n x l multiplied array)
-    """
-    result = []
-    for i in range(len(a)):
-        row = []
-        for j in range(len(b[0])):
-            temp = 0
-            for k in range(len(a[0])):
-                temp += a[i][k]*b[k][j]
-            row.append(temp)
-        result.append(row)
-    return result
-
 def create_obs_seq(input_string):
+    """
+    Creates a list of sequences from an input string
+    input: input_string (a string in Kattis format)
+    """
     input_list = [int(x) for x in input_string.split()[1:]]
     return input_list
 
 
 def get_column(observation, B):
+    """
+    Returns a column from a matrix
+    input: observation (column id)
+    input: B (observation matrix)
+    """
     result = []
     for i in range(len(B)):
         result.append(B[i][observation])
@@ -50,36 +43,6 @@ def dot_product(a, b):
     result = []
     for i in range(len(a[0])):
         result.append([a[0][i]*b[0][i]])
-    return result
-
-
-def matrix_dot(a, b):
-    result = []
-    for i in range(len(a)):
-        row = []
-        for j in range(len(a[0])):
-            row.append(a[i][j]*b[0][i])
-        result.append(row)
-    return result
-
-
-def matrix_log(a):
-    result = []
-    for row in range(len(a)):
-        row_res = []
-        for col in range(len(a[row])):
-            row_res.append(math.log(a[row][col] if a[row][col] != 0 else sys.float_info.epsilon))
-        result.append(row_res)
-    return result
-
-
-def matrix_log_a(a):
-    result = []
-    for row in range(len(a)):
-        row_res = []
-        for col in range(len(a[row])):
-            row_res.append(math.log(a[row][col] if a[row][col] != 0 else sys.float_info.epsilon))
-        result.append(row_res)
     return result
 
 

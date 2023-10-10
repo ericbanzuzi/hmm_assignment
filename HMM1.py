@@ -2,6 +2,10 @@ import fileinput
 
 
 def create_matrix(input_string):
+    """
+    Creates a matrix as python list from the input format used in these assignments
+    input: input_string (a string in Kattis format)
+    """
     input_list = [float(x) for x in input_string.split()]
     rows, cols = int(input_list[0]), int(input_list[1])
     matrix = []
@@ -15,17 +19,27 @@ def create_matrix(input_string):
 
 
 def create_obs_seq(input_string):
+    """
+    Creates a list of sequences from an input string
+    input: input_string (a string in Kattis format)
+    """
     input_list = [int(x) for x in input_string.split()[1:]]
     return input_list
 
 
 def get_column(observation, B):
+    """
+    Returns a column from a matrix
+    input: observation (column id)
+    input: B (observation matrix)
+    """
     result = []
     for i in range(len(B)):
         result.append(B[i][observation])
     return [result]
 
 
+# STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
 def alpha_pass(A, B, pi, observations):
     obs0 = observations[0]
     N, T = len(A), len(observations)
@@ -40,7 +54,6 @@ def alpha_pass(A, B, pi, observations):
 
     for t in range(1, T):
         obs_t = observations[t]
-        ct = 0
         alpha_prev = alphas[t-1]
         alpha_t = []
         for i in range(N):
@@ -49,7 +62,6 @@ def alpha_pass(A, B, pi, observations):
                 total += alpha_prev[0][j]*A[j][i]
             b_temp = get_column(obs_t, B)
             alpha_t.append(total*b_temp[0][i])
-            ct += alpha_t[i]
 
         alpha_t = [alpha_t]
         alphas.append(alpha_t)
@@ -67,22 +79,4 @@ if __name__ == '__main__':
     pi = create_matrix(lines[2])
     observations = create_obs_seq(lines[3])
     solved = alpha_pass(A, B, pi, observations)
-    print(sum(solved[-1][0]))  # print sum from last alpha
-    # a = [[0.6, 0.1, 0.1, 0.2], [0, 0.3, 0.2, 0.5], [0.8, 0.1, 0, 0.1], [0.2, 0, 0.1, 0.7]]
-    # b = [[0.6, 0.2, 0.1, 0.1], [0.1, 0.4, 0.1, 0.4], [0,0,0.7, 0.3], [0, 0, 0.1, 0.9]]
-    # pi = [[0.5, 0, 0, 0.5]]
-    # obs = [3]
-    # print(get_column(obs[0], b))
-    # a1 = dot_product(pi, get_column(obs[0], b))
-    # print('alpha 1:', a1)
-    # a2 = dot_product(matrix_mul(a1, a), get_column(0, b))
-    # print('alpha 2:', a2)
-
-
-
-    # next_state = matrix_mul(pi, A)
-    # observations = matrix_mul(next_state, B)
-    # result_shape = f'{len(observations)} {len(observations[0])} '
-    # print(result_shape + ' '.join(map(str, observations[0])))
-
-
+    print(sum(solved[-1][0]))  # print sum from last alpha as solution
