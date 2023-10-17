@@ -71,7 +71,7 @@ def viterbi_matrix(A, delta):
 
 def viterbi(A, B, pi, observations):
     N = len(A)
-    K = len(observations)
+    T = len(observations)
 
     deltas = []
     deltas_idx = []
@@ -81,15 +81,15 @@ def viterbi(A, B, pi, observations):
     delta = dot_product(pi, get_column(observations[0], B))
     deltas.append(delta)
 
-    for k in range(1, K):
+    for t in range(1, T):
         row_delta = []
         row_idx = []
         for i in range(N):
             # compute matrix containing values for a_{j,i} * delta_{t-1}
             temp_product = viterbi_matrix(A, deltas[-1])
-            b_temp = get_column(observations[k], B)
-            # select max_{j∈[1,..., N]} a_{j,i} * delta_{t-1} * b_i(obs_k)
-            # we can reuse the max from already computed a_{j,i} * delta_{t-1} | (b_i(obs_k) is a constant)
+            b_temp = get_column(observations[t], B)
+            # select max_{j∈[1,..., N]} a_{j,i} * delta_{t-1} * b_i(obs_t)
+            # we can reuse the max from already computed a_{j,i} * delta_{t-1} | (b_i(obs_t) is a constant)
             row_delta.append([max(temp_product[i])*b_temp[0][i]])
             row_idx.append(find_max_id(temp_product[i]))  # store index of the most likely state for delta idx
 
@@ -101,7 +101,7 @@ def viterbi(A, B, pi, observations):
     last_delta = reshape_vector(deltas[-1])[0]
     seq.append(find_max_id(last_delta))
 
-    for j in range(K-2, -1, -1):
+    for j in range(T-2, -1, -1):
         likely_best_state = seq[0]
         state = deltas_idx[j][likely_best_state]
         seq.insert(0, state)
