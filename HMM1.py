@@ -51,7 +51,7 @@ def alpha_pass(A, B, pi, observations):
     for i in range(N):
         b_temp = get_column(obs0, B)
         # b_temp and pi are 1xn vectors, so to access their values we need to take [0][i] 
-        alpha0.append(pi[0][i]*b_temp[0][i]) # because 
+        alpha0.append(pi[0][i]*b_temp[0][i])
 
     alpha0 = [alpha0]
     alphas.append(alpha0)
