@@ -95,7 +95,7 @@ def alpha_pass(A, B, pi, observations):
 def beta_pass(A, B, observations, cs):
     N, T = len(A), len(observations)
     # initialize beta at time T
-    beta_last = [[cs[T-1] for _ in range(N)]]
+    beta_last = [[cs[T-1] for _ in range(N)]] # 1 * cs_T 
     betas = [beta_last]
 
     for t in range(T-2, -1, -1):
