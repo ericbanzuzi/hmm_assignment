@@ -101,9 +101,10 @@ def viterbi(A, B, pi, observations):
     last_delta = reshape_vector(deltas[-1])[0]
     seq.append(find_max_id(last_delta))
 
-    for j in range(T-2, -1, -1):
+    # start from T-2 because we already have the state for time T (from initialization), and iterate backwards
+    for j in range(T-2, -1, -1): 
         likely_best_state = seq[0]
-        state = deltas_idx[j][likely_best_state]
+        state = deltas_idx[j][likely_best_state] # look up the state at time j that led to the likely_best_state at time j+1 
         seq.insert(0, state)
     return seq
 
