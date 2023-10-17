@@ -40,6 +40,11 @@ def get_column(observation, B):
 
 
 def dot_product(a, b):
+    """
+    Returns a dot product of two vectors
+    input: a (a vector in form 1 x n)
+    input: b (a vector in form 1 x n)
+    """
     result = []
     for i in range(len(a[0])):
         result.append([a[0][i]*b[0][i]])
@@ -71,6 +76,8 @@ def viterbi(A, B, pi, observations):
     deltas = []
     deltas_idx = []
 
+    # create initial delta by multiplying the probability of being in a state i, by the probability of observing
+    # obs0 in state i
     delta = dot_product(pi, get_column(observations[0], B))
     deltas.append(delta)
 
@@ -78,10 +85,13 @@ def viterbi(A, B, pi, observations):
         row_delta = []
         row_idx = []
         for i in range(N):
+            # compute matrix containing values for a_{j,i} * delta_{t-1}
             temp_product = viterbi_matrix(A, deltas[-1])
             b_temp = get_column(observations[k], B)
+            # select max_{j∈[1,..., N]} a_{j,i} * delta_{t-1} * b_i(obs_k)
+            # we can reuse the max from already computed a_{j,i} * delta_{t-1} | (b_i(obs_k) is a constant)
             row_delta.append([max(temp_product[i])*b_temp[0][i]])
-            row_idx.append(find_max_id(temp_product[i]))
+            row_idx.append(find_max_id(temp_product[i]))  # store index of the most likely state for delta idx
 
         deltas.append(row_delta)
         deltas_idx.append(row_idx)

@@ -46,16 +46,12 @@ def alpha_pass(A, B, pi, observations):
     obs0 = observations[0]
     N, T = len(A), len(observations)
     alphas = []
-    cs = []  # normalizers
-
-    # create initial alpha by multiplying the probability of being in a state i, by the probability of observing
-    # obs0 in state i
+    cs = []
     alpha0 = []
     for i in range(N):
         b_temp = get_column(obs0, B)
         alpha0.append(pi[0][i]*b_temp[0][i])
 
-    # normalize alpha as row stochastic
     c0 = 1/sum(alpha0)
     cs.append(c0)
     for i in range(N):
@@ -71,17 +67,14 @@ def alpha_pass(A, B, pi, observations):
         alpha_t = []
         for i in range(N):
             total = 0
-            # marginalization over the states by reusing alpha
             for j in range(N):
                 total += alpha_prev[0][j]*A[j][i]
             b_temp = get_column(obs_t, B)
-            # store probability observing obs_t in state i
             alpha_t.append(total*b_temp[0][i])
             ct += alpha_t[i]
 
         ct = 1/ct
         cs.append(ct)
-        # normalize alpha as row stochastic
         for i in range(N):
             alpha_t[i] = ct*alpha_t[i]
 
@@ -93,11 +86,10 @@ def alpha_pass(A, B, pi, observations):
 
 # STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
 def beta_pass(A, B, observations, cs):
+
     N, T = len(A), len(observations)
-    # initialize beta at time T
     beta_last = [[cs[T-1] for _ in range(N)]]
     betas = [beta_last]
-
     for t in range(T-2, -1, -1):
         beta_future = betas[0]
         ct = cs[t]
@@ -106,10 +98,8 @@ def beta_pass(A, B, observations, cs):
         for i in range(N):
             total = 0
             b_temp = get_column(obs_t, B)
-            # marginalize over the states and multiply with the future observation and beta_{t+1}
             for j in range(N):
                 total += A[i][j]*b_temp[0][j]*beta_future[0][j]
-            # normalize with value c_t
             beta_t.append(total*ct)
         betas.insert(0, [beta_t])
 
@@ -143,7 +133,7 @@ def gamma_calculations(A, B, observations, alphas, betas):
 
 
 # STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
-def baum_welch(A, B, pi, observations, num_iter=100):
+def baum_welch(A, B, pi, observations, num_iter=math.inf):
     N, T = len(A), len(observations)
     alphas, cs = alpha_pass(A, B, pi, observations)
     betas = beta_pass(A, B, observations, cs)
@@ -169,7 +159,7 @@ def baum_welch(A, B, pi, observations, num_iter=100):
         logProb = -logProb
         iter += 1
 
-    return A, B, pi
+    return A, B, pi, iter
 
 
 # STAMP TUTORIAL: A Revealing Introduction to Hidden Markov Models by Mark Stamp (2004).
@@ -222,19 +212,65 @@ def get_result(M):
     return result
 
 
+import numpy as np
+
+def perturb_and_normalize(matrix, std_dev):
+    # Add small random perturbations to the matrix
+    perturbed_matrix = matrix + np.random.normal(0, std_dev, matrix.shape)
+
+    # Ensure no negative values
+    perturbed_matrix = np.abs(perturbed_matrix)
+
+    # Renormalize each row to make the matrix row stochastic
+    row_sums = perturbed_matrix.sum(axis=1, keepdims=True)
+    normalized_matrix = perturbed_matrix / row_sums
+
+    return normalized_matrix
+
+
+from scipy.spatial import distance
+import numpy as np
+
 if __name__ == '__main__':
     lines = []
     for line in fileinput.input():
         lines.append(line)
 
-    A = create_matrix(lines[0])
-    B = create_matrix(lines[1])
-    pi = create_matrix(lines[2])
-    observations = create_obs_seq(lines[3])
+    A = [[0.4, 0.6],
+         [0.55, 0.45]]
 
-    A, B, pi = baum_welch(A, B, pi, observations)
+    B = [[0.5, 0.2, 0.11, 0.19],
+         [0.22, 0.28, 0.23, 0.27]]
+
+    pi = [[0.4, 0.6]]
+
+    A_prime = [[0.7, 0.05, 0.25],
+               [0.1, 0.8, 0.1],
+               [0.2, 0.3, 0.5]]
+    B_prime = [[0.7, 0.2, 0.1, 0],
+               [0.1, 0.4, 0.3, 0.2],
+               [0, 0.1, 0.2, 0.7]]
+    pi_prime = [[1, 0, 0]]
+
+    # A_prime = perturb_and_normalize(np.array(A_prime), 0.01)
+    # B_prime = perturb_and_normalize(np.array(B_prime), 0.01)
+    # pi_prime = perturb_and_normalize(np.array(pi_prime), 0.01)
+    #
+    # print(A_prime)
+    # print(B_prime)
+    # print(pi_prime)
+
+    # print(np.linalg.norm(np.array(A) - np.array(A_prime), 'fro'))
+    # print(np.linalg.norm(np.array(B) - np.array(B_prime), 'fro'))
+    # print(np.linalg.norm(np.array(pi) - np.array(pi_prime), 'fro'))
+
+    observations = create_obs_seq(lines[0])
+
+    A, B, pi, iter = baum_welch(A, B, pi, observations)
 
     result_string_A = get_result(A)
     result_string_B = get_result(B)
-    print(result_string_A)
-    print(result_string_B)
+    print('A:', A)
+    print('B:', B)
+    print('Pi:', pi)
+    print('ITERATIONS:', iter)

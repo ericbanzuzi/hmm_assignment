@@ -44,6 +44,9 @@ def alpha_pass(A, B, pi, observations):
     obs0 = observations[0]
     N, T = len(A), len(observations)
     alphas = []
+
+    # create initial alpha by multiplying the probability of being in a state i, by the probability of observing
+    # obs0 in state i
     alpha0 = []
     for i in range(N):
         b_temp = get_column(obs0, B)
@@ -58,9 +61,11 @@ def alpha_pass(A, B, pi, observations):
         alpha_t = []
         for i in range(N):
             total = 0
+            # marginalization over the states by reusing alpha
             for j in range(N):
                 total += alpha_prev[0][j]*A[j][i]
             b_temp = get_column(obs_t, B)
+            # store probability observing obs_t in state i
             alpha_t.append(total*b_temp[0][i])
 
         alpha_t = [alpha_t]
